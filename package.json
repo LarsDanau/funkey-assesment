@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "seed": "tsx src/db/seed.ts",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -12,6 +13,7 @@
     "@t3-oss/env-nextjs": "^0.13.7",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
+    "drizzle-seed": "^0.3.1",
     "next": "15.3.3",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
@@ -29,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }
