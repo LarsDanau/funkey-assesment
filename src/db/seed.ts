@@ -1,9 +1,13 @@
+import { env } from "@/env";
 import { reset, seed } from "drizzle-seed";
+import postgres from "postgres";
 import { db } from ".";
 import * as schema from "./schema";
 
 const CATEGORIES_COUNT = 10;
 const ACTIVITIES_PER_CATEGORY = 5;
+
+const client = postgres(env.POSTGRES_URL);
 
 async function main() {
 	console.log("Resetting database");
@@ -12,12 +16,15 @@ async function main() {
 	});
 
 	console.log("Starting seeding");
+	const now = new Date();
 	await seed(db, schema).refine((f) => ({
 		categories: {
 			count: CATEGORIES_COUNT,
 			columns: {
 				title: f.loremIpsum({ arraySize: 1 }),
 				description: f.loremIpsum({ sentencesCount: 3 }),
+				created_at: f.date({ maxDate: now }),
+				updated_at: f.date({ maxDate: now }),
 			},
 			with: {
 				activities: ACTIVITIES_PER_CATEGORY,
@@ -89,6 +96,27 @@ async function main() {
 	}
 
 	await db.insert(schema.activitiesMedia).values(activitiesMediaData);
+
+	// When seeding with drizzle-seed, the postgres sequences are out of sync. Check:https://github.com/drizzle-team/drizzle-orm/issues/2554
+	console.log("Fixing PostgreSQL sequences...");
+	try {
+		await client`SELECT setval('categories_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM categories))`;
+		console.log("✅ Categories sequence fixed");
+
+		await client`SELECT setval('activities_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM activities))`;
+		console.log("✅ Activities sequence fixed");
+
+		await client`SELECT setval('media_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM media))`;
+		console.log("✅ Media sequence fixed");
+	} catch (error) {
+		console.error("❌ Error fixing sequences:", error);
+	}
+
+	console.log("Seeding succeeded");
+
+	// Close the database connection and exit
+	await client.end();
+	process.exit(0);
 
 	console.log("Seeding succeeded");
 	process.exit(0);
