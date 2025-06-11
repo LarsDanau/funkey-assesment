@@ -28,7 +28,7 @@ const createActivitySchema = z.object({
 });
 
 export async function createActivity(
-	prevState: ActionState | null,
+	_prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
@@ -73,7 +73,7 @@ const createCategorySchema = z.object({
 });
 
 export async function createCategory(
-	prevState: ActionState | null,
+	_prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
@@ -115,7 +115,7 @@ const editCategorySchema = z.object({
 });
 
 export async function updateCategory(
-	prevState: ActionState | null,
+	_prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
@@ -162,7 +162,7 @@ const editActivitySchema = z.object({
 });
 
 export async function updateActivity(
-	prevState: ActionState | null,
+	_prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
