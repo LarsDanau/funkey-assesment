@@ -215,4 +215,5 @@ export async function deleteActivityAction(activityId: SelectActivity["id"]) {
 export async function deleteCategoryAction(categoryId: SelectCategory["id"]) {
 	await deleteCategory(categoryId);
 	revalidatePath("/");
+	redirect("/");
 }
