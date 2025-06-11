@@ -47,11 +47,14 @@ export async function getCategories() {
 	return await db.query.categories.findMany();
 }
 
-export async function getCategoryWithMedia(categoryId: SelectCategory["id"]) {
+export async function getCategoryWithMediaAndActivities(
+	categoryId: SelectCategory["id"],
+) {
 	return await db.query.categories.findFirst({
 		where: (categories, { eq }) => eq(categories.id, categoryId),
 		with: {
 			categoriesMedia: { with: { media: true } },
+			activities: true,
 		},
 	});
 }
@@ -123,10 +126,20 @@ export async function getMedia() {
 	return await db.select().from(media);
 }
 
-export async function updateCategoryWithMedia(
+export async function getAllActivities() {
+	return await db.query.activities.findMany({
+		orderBy: (activities, { desc }) => [desc(activities.created_at)],
+		with: {
+			category: true,
+		},
+	});
+}
+
+export async function updateCategoryWithMediaAndActivities(
 	categoryId: SelectCategory["id"],
 	categoryData: Partial<InsertCategory>,
 	categoryMedias?: InsertCategoriesMedia[],
+	activityIds?: SelectActivity["id"][],
 ) {
 	return await db.transaction(async (tx) => {
 		const updatedCategory = await tx
@@ -142,6 +155,22 @@ export async function updateCategoryWithMedia(
 
 			if (categoryMedias.length > 0) {
 				await tx.insert(categoriesMedia).values(categoryMedias);
+			}
+		}
+
+		if (activityIds) {
+			await tx
+				.update(activities)
+				.set({ category_id: null })
+				.where(eq(activities.category_id, categoryId));
+
+			if (activityIds.length > 0) {
+				for (const activityId of activityIds) {
+					await tx
+						.update(activities)
+						.set({ category_id: categoryId })
+						.where(eq(activities.id, activityId));
+				}
 			}
 		}
 

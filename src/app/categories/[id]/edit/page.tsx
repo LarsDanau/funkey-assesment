@@ -8,7 +8,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { getCategoryWithMedia, getMedia } from "@/db/queries";
+import {
+	getAllActivities,
+	getCategoryWithMediaAndActivities,
+	getMedia,
+} from "@/db/queries";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -18,7 +22,8 @@ export default async function EditCategoryPage({
 }: { params: Promise<{ id: number }> }) {
 	const { id } = await params;
 	const media = await getMedia();
-	const category = await getCategoryWithMedia(id);
+	const category = await getCategoryWithMediaAndActivities(id);
+	const activities = await getAllActivities();
 
 	if (!category) {
 		return notFound();
@@ -52,7 +57,11 @@ export default async function EditCategoryPage({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<EditCategoryForm media={media} category={category} />
+					<EditCategoryForm
+						media={media}
+						category={category}
+						activities={activities}
+					/>
 				</CardContent>
 			</Card>
 		</div>

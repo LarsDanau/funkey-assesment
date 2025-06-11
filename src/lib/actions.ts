@@ -7,7 +7,7 @@ import {
 	insertCategory,
 	insertCategoryMedias,
 	updateActivityWithMedia,
-	updateCategoryWithMedia,
+	updateCategoryWithMediaAndActivities,
 } from "@/db/queries";
 import { deleteActivity } from "@/db/queries";
 import type { SelectActivity, SelectCategory } from "@/db/schema";
@@ -112,18 +112,24 @@ const editCategorySchema = z.object({
 	title: z.string().min(1),
 	description: z.string(),
 	mediaIds: z.string(),
+	activityIds: z.string().optional(),
 });
 
 export async function updateCategory(
-	_prevState: ActionState | null,
+	prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
 	const parsed = editCategorySchema.safeParse(dataToValidate);
 	const mediaIdsString = formData.get("mediaIds") as string;
+	const activityIdsString = formData.get("activityIds") as string;
 
 	const mediaIds = mediaIdsString
 		? (JSON.parse(mediaIdsString) as number[])
+		: [];
+
+	const activityIds = activityIdsString
+		? (JSON.parse(activityIdsString) as number[])
 		: [];
 
 	if (!parsed.success) {
@@ -135,13 +141,14 @@ export async function updateCategory(
 
 	const { title, description } = parsed.data;
 
-	await updateCategoryWithMedia(
+	await updateCategoryWithMediaAndActivities(
 		parsed.data.categoryId,
 		{ title, description },
 		mediaIds.map((id) => ({
 			category_id: parsed.data.categoryId,
 			media_id: id,
 		})),
+		activityIds,
 	);
 
 	revalidatePath(`/categories/${parsed.data.categoryId}`);
