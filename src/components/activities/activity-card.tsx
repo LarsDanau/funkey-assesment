@@ -1,5 +1,4 @@
-"use client";
-
+import { DeleteActivityButton } from "@/components/activities/delete-activity-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,10 +9,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import type { getCategoriesWithMediaAndActivities } from "@/db/queries";
-import { deleteActivityAction } from "@/lib/actions";
-import { Info, Loader2, Pencil, Trash } from "lucide-react";
+import { Info, Pencil } from "lucide-react";
 import Link from "next/link";
-import { useTransition } from "react";
 
 type ActivityCardProps = {
 	activity: Awaited<
@@ -24,8 +21,6 @@ type ActivityCardProps = {
 };
 
 export function ActivityCard({ activity }: ActivityCardProps) {
-	const [isDeleting, startDelete] = useTransition();
-
 	return (
 		<Card className="h-full transition-shadow hover:shadow-md">
 			<CardHeader className="pb-3">
@@ -38,28 +33,16 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 						{activity.activitiesMedia.length} media
 					</Badge>
 					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							className="hover:cursor-pointer bg-yellow-300"
-						>
-							<Pencil className="w-4 h-4" />
-						</Button>
-						<Button
-							className="hover:cursor-pointer"
-							variant="destructive"
-							size="sm"
-							disabled={isDeleting}
-							onClick={() => {
-								startDelete(() => deleteActivityAction(activity.id));
-							}}
-						>
-							{isDeleting ? (
-								<Loader2 className="animate-spin" />
-							) : (
-								<Trash className="h-4 w-4" />
-							)}
-						</Button>
+						<Link href={`/activities/${activity.id}/edit`}>
+							<Button
+								variant="outline"
+								size="sm"
+								className="hover:cursor-pointer bg-yellow-300"
+							>
+								<Pencil className="w-4 h-4" />
+							</Button>
+						</Link>
+						<DeleteActivityButton activityId={activity.id} />
 						<Link href={`/activities/${activity.id}`}>
 							<Button
 								variant="default"

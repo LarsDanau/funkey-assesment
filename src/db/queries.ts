@@ -56,6 +56,15 @@ export async function getCategoryWithMedia(categoryId: SelectCategory["id"]) {
 	});
 }
 
+export async function getActivityWithMedia(activityId: SelectActivity["id"]) {
+	return await db.query.activities.findFirst({
+		where: (activities, { eq }) => eq(activities.id, activityId),
+		with: {
+			activitiesMedia: { with: { media: true } },
+		},
+	});
+}
+
 export async function getCategoriesWithMediaAndActivities() {
 	return await db.query.categories.findMany({
 		orderBy: (categories, { desc }) => [desc(categories.created_at)],

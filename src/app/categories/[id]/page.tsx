@@ -106,9 +106,7 @@ export default async function CategoryPage({
 					<CardContent>
 						<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{category.activities.map((activity) => (
-								<Link key={activity.id} href={`/activities/${activity.id}`}>
-									<ActivityCard activity={activity} />
-								</Link>
+								<ActivityCard key={activity.id} activity={activity} />
 							))}
 						</div>
 					</CardContent>

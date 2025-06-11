@@ -6,6 +6,7 @@ import {
 	insertActivityMedias,
 	insertCategory,
 	insertCategoryMedias,
+	updateActivityWithMedia,
 	updateCategoryWithMedia,
 } from "@/db/queries";
 import { deleteActivity } from "@/db/queries";
@@ -53,7 +54,7 @@ export async function createActivity(
 		description,
 	});
 	await insertActivityMedias(
-		mediaIds.map((id) => ({ activity_id: activity[0].id, media_id: id })),
+		mediaIds.map((id) => ({ activity_id: activity[0]?.id, media_id: id })),
 	);
 
 	revalidatePath(`/categories/${categoryId}`);
@@ -94,7 +95,7 @@ export async function createCategory(
 
 	const category = await insertCategory({ title, description });
 	await insertCategoryMedias(
-		mediaIds.map((id) => ({ category_id: category[0].id, media_id: id })),
+		mediaIds.map((id) => ({ category_id: category[0]?.id, media_id: id })),
 	);
 
 	revalidatePath("/");
@@ -149,6 +150,53 @@ export async function updateCategory(
 	return {
 		success: true,
 		message: "Category updated successfully",
+	};
+}
+
+const editActivitySchema = z.object({
+	categoryId: z.coerce.number(),
+	activityId: z.coerce.number(),
+	title: z.string().min(1),
+	description: z.string(),
+	mediaIds: z.string(),
+});
+
+export async function updateActivity(
+	prevState: ActionState | null,
+	formData: FormData,
+) {
+	const dataToValidate = Object.fromEntries(formData);
+	const parsed = editActivitySchema.safeParse(dataToValidate);
+	const mediaIdsString = formData.get("mediaIds") as string;
+
+	const mediaIds = mediaIdsString
+		? (JSON.parse(mediaIdsString) as number[])
+		: [];
+
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.message,
+		};
+	}
+
+	const { title, description } = parsed.data;
+
+	await updateActivityWithMedia(
+		parsed.data.activityId,
+		{ title, description },
+		mediaIds.map((id) => ({
+			activity_id: parsed.data.activityId,
+			media_id: id,
+		})),
+	);
+
+	revalidatePath(`/categories/${parsed.data.categoryId}`);
+	redirect(`/categories/${parsed.data.categoryId}`);
+
+	return {
+		success: true,
+		message: "Activity updated successfully",
 	};
 }
 
