@@ -116,7 +116,7 @@ const editCategorySchema = z.object({
 });
 
 export async function updateCategory(
-	prevState: ActionState | null,
+	_prevState: ActionState | null,
 	formData: FormData,
 ) {
 	const dataToValidate = Object.fromEntries(formData);
