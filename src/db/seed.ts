@@ -114,11 +114,7 @@ async function main() {
 
 	console.log("Seeding succeeded");
 
-	// Close the database connection and exit
 	await client.end();
-	process.exit(0);
-
-	console.log("Seeding succeeded");
 	process.exit(0);
 }
 

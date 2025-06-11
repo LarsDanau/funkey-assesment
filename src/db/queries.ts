@@ -120,21 +120,17 @@ export async function updateCategoryWithMedia(
 	categoryMedias?: InsertCategoriesMedia[],
 ) {
 	return await db.transaction(async (tx) => {
-		// Update the category
 		const updatedCategory = await tx
 			.update(categories)
 			.set(categoryData)
 			.where(eq(categories.id, categoryId))
 			.returning();
 
-		// Update media if provided
 		if (categoryMedias) {
-			// Remove existing media associations
 			await tx
 				.delete(categoriesMedia)
 				.where(eq(categoriesMedia.category_id, categoryId));
 
-			// Add new media associations
 			if (categoryMedias.length > 0) {
 				await tx.insert(categoriesMedia).values(categoryMedias);
 			}
@@ -150,21 +146,17 @@ export async function updateActivityWithMedia(
 	activityMedias?: InsertActivitiesMedia[],
 ) {
 	return await db.transaction(async (tx) => {
-		// Update the category
 		const updatedActivity = await tx
 			.update(activities)
 			.set(activityData)
 			.where(eq(activities.id, activityId))
 			.returning();
 
-		// Update media if provided
 		if (activityMedias) {
-			// Remove existing media associations
 			await tx
 				.delete(activitiesMedia)
 				.where(eq(activitiesMedia.activity_id, activityId));
 
-			// Add new media associations
 			if (activityMedias.length > 0) {
 				await tx.insert(activitiesMedia).values(activityMedias);
 			}
