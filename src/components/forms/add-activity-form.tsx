@@ -1,27 +1,52 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { InsertCategory } from "@/db/schema";
+import type { SelectCategory, SelectMedia } from "@/db/schema";
 import { createActivity } from "@/lib/actions";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import { useActionState } from "react";
-
+import { useActionState, useState } from "react";
+import { MediaSelector } from "./media-selector";
 type AddActivityFormProps = {
-	categoryId: NonNullable<InsertCategory["id"]>;
-	onCancel: () => void;
+	categories: SelectCategory[];
+	media: SelectMedia[];
 };
 
-export function AddActivityForm({
-	categoryId,
-	onCancel,
-}: AddActivityFormProps) {
+export function AddActivityForm({ categories, media }: AddActivityFormProps) {
+	const [categoryId, setCategoryId] = useState<string | null>(null);
 	const [state, formAction, isPending] = useActionState(createActivity, null);
+	const [selectedMedia, setSelectedMedia] = useState<number[]>([]);
+
+	const handleSubmit = (formData: FormData) => {
+		formData.append("mediaIds", JSON.stringify(selectedMedia));
+		formData.append("categoryId", categoryId ?? "");
+		formAction(formData);
+	};
 
 	return (
-		<form action={formAction} className="space-y-4">
-			<input type="hidden" name="categoryId" value={categoryId} />
+		<form action={handleSubmit} className="space-y-4">
+			<Select onValueChange={setCategoryId}>
+				<SelectTrigger>
+					<SelectValue placeholder="Select a category" />
+				</SelectTrigger>
+				<SelectContent>
+					{categories.map((category) => (
+						<SelectItem key={category.id} value={category.id.toString()}>
+							{category.title}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
 			<div className="space-y-2">
 				<Label htmlFor="activity-title">Activity Name</Label>
 				<Input
@@ -37,10 +62,17 @@ export function AddActivityForm({
 				<Textarea
 					id="activity-description"
 					name="description"
-					placeholder="Enter activity description (optional)"
+					placeholder="Enter activity description"
 					disabled={isPending}
 				/>
 			</div>
+
+			<MediaSelector
+				onMediaChangeAction={setSelectedMedia}
+				selectedMedia={selectedMedia}
+				media={media}
+			/>
+
 			{state && !state.success && (
 				<div className="text-sm text-red-600 bg-red-50 p-2 rounded">
 					{state.message}
@@ -53,14 +85,6 @@ export function AddActivityForm({
 			)}
 
 			<div className="flex justify-end space-x-2">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onCancel}
-					disabled={isPending}
-				>
-					Cancel
-				</Button>
 				<Button
 					type="submit"
 					disabled={isPending}

@@ -1,5 +1,5 @@
 "use client";
-import { AddActivityDialog } from "@/components/activities/add-activity-dialog";
+
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/card";
 
 import { ActivityCard } from "@/components/activities/activity-card";
-import { DeleteCategoryButton } from "@/components/categories/delete-category-button";
-import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
-import { ViewCategoryButton } from "@/components/categories/view-category-button";
+import { Button } from "@/components/ui/button";
 import type { getCategoriesWithMediaAndActivities } from "@/db/queries";
+import { Info, Pencil } from "lucide-react";
+import Link from "next/link";
+import { DeleteCategoryButton } from "./delete-category-button";
 
 interface CategoryCardProps {
 	category: Awaited<
@@ -32,10 +33,19 @@ export function CategoryCard({ category }: CategoryCardProps) {
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<AddActivityDialog categoryId={category.id} />
+						<Link href={`/categories/${category.id}`}>
+							<Button className="bg-blue-500 hover:cursor-pointer w-full">
+								<Info className="h-4 w-4" />
+								View Category
+							</Button>
+						</Link>
+						<Link href={`/categories/${category.id}/edit`}>
+							<Button variant="outline" className="hover:cursor-pointer w-full">
+								<Pencil className="h-4 w-4" />
+								Edit Category
+							</Button>
+						</Link>
 						<DeleteCategoryButton categoryId={category.id} />
-						<EditCategoryDialog categoryId={category.id} />
-						<ViewCategoryButton categoryId={category.id} />
 					</div>
 				</div>
 			</CardHeader>

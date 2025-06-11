@@ -60,12 +60,15 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 								<Trash className="h-4 w-4" />
 							)}
 						</Button>
-						<Link
-							className="flex gap-2 flex-row justify-center items-center px-3 rounded-md hover:cursor-pointer bg-blue-500 text-white"
-							href={`/activities/${activity.id}`}
-						>
-							<Info className="w-4 h-4" />
-							Details
+						<Link href={`/activities/${activity.id}`}>
+							<Button
+								variant="default"
+								size="sm"
+								className="hover:cursor-pointer bg-blue-500 flex gap-2"
+							>
+								<Info className="w-4 h-4" />
+								Details
+							</Button>
 						</Link>
 					</div>
 				</div>

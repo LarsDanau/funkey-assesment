@@ -1,6 +1,8 @@
-import { AddCategoryDialog } from "@/components/categories/add-category-dialog";
 import { CategoriesList } from "@/components/categories/categories-list";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 
 export default function Home() {
@@ -13,7 +15,12 @@ export default function Home() {
 						Categories & Activities
 					</h2>
 				</div>
-				<AddCategoryDialog />
+				<Link href="/categories/create">
+					<Button className="flex items-center gap-2 hover:cursor-pointer">
+						<Plus className="h-4 w-4" />
+						New Category
+					</Button>
+				</Link>
 			</div>
 			<Separator className="my-4" />
 			<Suspense fallback={<div>Loading...</div>}>

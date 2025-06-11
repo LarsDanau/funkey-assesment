@@ -6,8 +6,6 @@ import { EmptyCategoryList } from "./empty-state";
 export async function CategoriesList() {
 	const data = await getCategoriesWithMediaAndActivities();
 
-	console.log("@LARS data: ", JSON.stringify(data));
-
 	if (data.length === 0) {
 		return <EmptyCategoryList />;
 	}

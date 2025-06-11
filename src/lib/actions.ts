@@ -1,6 +1,13 @@
 "use server";
 
-import { deleteCategory, insertActivity, insertCategory } from "@/db/queries";
+import {
+	deleteCategory,
+	insertActivity,
+	insertActivityMedias,
+	insertCategory,
+	insertCategoryMedias,
+	updateCategoryWithMedia,
+} from "@/db/queries";
 import { deleteActivity } from "@/db/queries";
 import type { SelectActivity, SelectCategory } from "@/db/schema";
 import { revalidatePath } from "next/cache";
@@ -16,6 +23,7 @@ const createActivitySchema = z.object({
 	title: z.string().min(1),
 	description: z.string(),
 	categoryId: z.coerce.number(),
+	mediaIds: z.string(),
 });
 
 export async function createActivity(
@@ -24,6 +32,11 @@ export async function createActivity(
 ) {
 	const dataToValidate = Object.fromEntries(formData);
 	const parsed = createActivitySchema.safeParse(dataToValidate);
+	const mediaIdsString = formData.get("mediaIds") as string;
+
+	const mediaIds = mediaIdsString
+		? (JSON.parse(mediaIdsString) as number[])
+		: [];
 
 	if (!parsed.success) {
 		return {
@@ -34,10 +47,17 @@ export async function createActivity(
 
 	const { title, description, categoryId } = parsed.data;
 
-	await insertActivity({ category_id: categoryId, title, description });
+	const activity = await insertActivity({
+		category_id: categoryId,
+		title,
+		description,
+	});
+	await insertActivityMedias(
+		mediaIds.map((id) => ({ activity_id: activity[0].id, media_id: id })),
+	);
 
-	revalidatePath("/");
-	redirect("/");
+	revalidatePath(`/categories/${categoryId}`);
+	redirect(`/categories/${categoryId}`);
 
 	return {
 		success: true,
@@ -48,6 +68,7 @@ export async function createActivity(
 const createCategorySchema = z.object({
 	title: z.string().min(1),
 	description: z.string(),
+	mediaIds: z.string(),
 });
 
 export async function createCategory(
@@ -56,6 +77,11 @@ export async function createCategory(
 ) {
 	const dataToValidate = Object.fromEntries(formData);
 	const parsed = createCategorySchema.safeParse(dataToValidate);
+	const mediaIdsString = formData.get("mediaIds") as string;
+
+	const mediaIds = mediaIdsString
+		? (JSON.parse(mediaIdsString) as number[])
+		: [];
 
 	if (!parsed.success) {
 		return {
@@ -66,7 +92,10 @@ export async function createCategory(
 
 	const { title, description } = parsed.data;
 
-	await insertCategory({ title, description });
+	const category = await insertCategory({ title, description });
+	await insertCategoryMedias(
+		mediaIds.map((id) => ({ category_id: category[0].id, media_id: id })),
+	);
 
 	revalidatePath("/");
 	redirect("/");
@@ -74,6 +103,52 @@ export async function createCategory(
 	return {
 		success: true,
 		message: "Category created successfully",
+	};
+}
+
+const editCategorySchema = z.object({
+	categoryId: z.coerce.number(),
+	title: z.string().min(1),
+	description: z.string(),
+	mediaIds: z.string(),
+});
+
+export async function updateCategory(
+	prevState: ActionState | null,
+	formData: FormData,
+) {
+	const dataToValidate = Object.fromEntries(formData);
+	const parsed = editCategorySchema.safeParse(dataToValidate);
+	const mediaIdsString = formData.get("mediaIds") as string;
+
+	const mediaIds = mediaIdsString
+		? (JSON.parse(mediaIdsString) as number[])
+		: [];
+
+	if (!parsed.success) {
+		return {
+			success: false,
+			message: parsed.error.message,
+		};
+	}
+
+	const { title, description } = parsed.data;
+
+	await updateCategoryWithMedia(
+		parsed.data.categoryId,
+		{ title, description },
+		mediaIds.map((id) => ({
+			category_id: parsed.data.categoryId,
+			media_id: id,
+		})),
+	);
+
+	revalidatePath(`/categories/${parsed.data.categoryId}`);
+	redirect(`/categories/${parsed.data.categoryId}`);
+
+	return {
+		success: true,
+		message: "Category updated successfully",
 	};
 }
 
