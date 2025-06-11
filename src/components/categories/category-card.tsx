@@ -27,7 +27,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
 		<Card className="w-full">
 			<CardHeader>
 				<div className="flex items-center justify-between">
-					<div>
+					<div className="self-start">
 						<CardTitle>{category.title}</CardTitle>
 						<CardDescription>{category.description}</CardDescription>
 					</div>
